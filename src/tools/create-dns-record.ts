@@ -39,7 +39,13 @@ export function registerCreateDnsRecord(
           priority,
           ttl,
         });
-        return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+        const effectiveFqdn = subdomain ? `${subdomain}.${fqdn}` : fqdn;
+        const enriched = {
+          ...(data as object),
+          effective_fqdn: effectiveFqdn,
+          _hint: `Use fqdn="${effectiveFqdn}" when reading/updating/deleting this record.`,
+        };
+        return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
       } catch (e) {
         return handleToolError(e);
       }

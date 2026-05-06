@@ -17,7 +17,7 @@ export function registerUpdateDnsRecord(
 ): void {
   server.tool(
     "timeweb_update_dns_record",
-    "Update an existing DNS record by id. Same body shape as create — pass the full record state.",
+    "Update an existing DNS record by id. Same body shape as create. IMPORTANT: pass the FQDN at which the record actually lives — for records on a subdomain that is the full subdomain FQDN (e.g. www.example.com), not the parent zone. Using the wrong FQDN returns 404.",
     {
       fqdn: fqdnSchema,
       record_id: recordIdSchema,
