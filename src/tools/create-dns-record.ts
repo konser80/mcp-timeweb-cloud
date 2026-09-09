@@ -43,7 +43,7 @@ export function registerCreateDnsRecord(
         const enriched = {
           ...(data as object),
           effective_fqdn: effectiveFqdn,
-          _hint: `Use fqdn="${effectiveFqdn}" when reading/updating/deleting this record.`,
+          _hint: `This record is named ${effectiveFqdn}. Read/update/delete it with fqdn="${effectiveFqdn}"; if that returns nothing, it is stored on the parent zone "${fqdn}" with data.subdomain="${subdomain}" — which is where non-CNAME types end up.`,
         };
         return { content: [{ type: "text", text: JSON.stringify(enriched, null, 2) }] };
       } catch (e) {

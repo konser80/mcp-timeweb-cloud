@@ -17,7 +17,7 @@ export function registerUpdateDnsRecord(
 ): void {
   server.tool(
     "timeweb_update_dns_record",
-    "Update an existing DNS record by id. Same body shape as create. IMPORTANT: pass the FQDN at which the record actually lives — for records on a subdomain that is the full subdomain FQDN (e.g. www.example.com), not the parent zone. Using the wrong FQDN returns 404.",
+    "Update an existing DNS record by id. Same body shape as create. IMPORTANT: pass the FQDN at which the record actually lives, or the call returns 404. Where that is depends on the record: a CNAME created on a label lives at the subdomain FQDN (www.example.com), while other types stay on the parent zone with `data.subdomain` set. If a lookup at the subdomain FQDN comes back empty, list the parent zone and match on `data.subdomain`.",
     {
       fqdn: fqdnSchema,
       record_id: recordIdSchema,

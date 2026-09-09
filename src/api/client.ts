@@ -65,6 +65,13 @@ export interface ListDomainsParams {
   sort?: string;
 }
 
+/** V1 rejects a record body with no `subdomain` ("Bad subdomain name"), even at
+ *  the apex — the field is the record NAME, not a label: it takes either a
+ *  relative label (`www`) or the zone itself for an apex record. */
+function withRecordName(fqdn: string, body: DnsRecordBody): DnsRecordBody {
+  return body.subdomain === undefined ? { ...body, subdomain: fqdn } : body;
+}
+
 export class TimewebCloudClient {
   private readonly http: AxiosInstance;
 
@@ -170,7 +177,7 @@ export class TimewebCloudClient {
     return this.req(
       "post",
       `/api/v1/domains/${encodeURIComponent(fqdn)}/dns-records`,
-      { data: body }
+      { data: withRecordName(fqdn, body) }
     );
   }
 
@@ -182,7 +189,7 @@ export class TimewebCloudClient {
     return this.req(
       "patch",
       `/api/v1/domains/${encodeURIComponent(fqdn)}/dns-records/${recordId}`,
-      { data: body }
+      { data: withRecordName(fqdn, body) }
     );
   }
 
