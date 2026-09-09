@@ -16,6 +16,17 @@ import { registerDeleteDnsRecord } from "./tools/delete-dns-record.js";
 import { registerGetNameServers } from "./tools/get-name-servers.js";
 import { registerUpdateNameServers } from "./tools/update-name-servers.js";
 import { registerSetDefaultNameServers } from "./tools/set-default-name-servers.js";
+import { registerListTlds } from "./tools/list-tlds.js";
+import { registerGetTld } from "./tools/get-tld.js";
+import { registerListPersons } from "./tools/list-persons.js";
+import { registerGetPerson } from "./tools/get-person.js";
+import { registerCreatePerson } from "./tools/create-person.js";
+import { registerUpdatePerson } from "./tools/update-person.js";
+import { registerDeletePerson } from "./tools/delete-person.js";
+import { registerListDomainRequests } from "./tools/list-domain-requests.js";
+import { registerGetDomainRequest } from "./tools/get-domain-request.js";
+import { registerCreateDomainRequest } from "./tools/create-domain-request.js";
+import { registerPayDomainRequest } from "./tools/pay-domain-request.js";
 
 export function createServer(client: TimewebCloudClient): McpServer {
   const server = new McpServer({
@@ -39,6 +50,18 @@ export function createServer(client: TimewebCloudClient): McpServer {
   registerGetNameServers(server, client);
   registerUpdateNameServers(server, client);
   registerSetDefaultNameServers(server, client);
+
+  registerListTlds(server, client);
+  registerGetTld(server, client);
+  registerListPersons(server, client);
+  registerGetPerson(server, client);
+  registerCreatePerson(server, client);
+  registerUpdatePerson(server, client);
+  registerDeletePerson(server, client);
+  registerListDomainRequests(server, client);
+  registerGetDomainRequest(server, client);
+  registerCreateDomainRequest(server, client);
+  registerPayDomainRequest(server, client);
 
   return server;
 }

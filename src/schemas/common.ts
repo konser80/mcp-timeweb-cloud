@@ -45,3 +45,27 @@ export const prioritySchema = z
   .max(65535)
   .optional()
   .describe("Priority (used for MX and SRV records)");
+
+export const personIdSchema = z
+  .number()
+  .int()
+  .positive()
+  .describe("Domain admin (person) ID, as returned by timeweb_list_persons");
+
+export const requestIdSchema = z
+  .number()
+  .int()
+  .positive()
+  .describe("Domain request ID, as returned by timeweb_create_domain_request");
+
+export const tldIdSchema = z.number().int().positive().describe("Domain zone (TLD) ID");
+
+export const domainPeriodSchema = z
+  .enum(["P1Y", "P2Y", "P3Y", "P4Y", "P5Y", "P6Y", "P7Y", "P8Y", "P9Y", "P10Y"])
+  .describe(
+    "Payment period in ISO-8601 duration form. .ru and .рф accept P1Y–P3Y only; check allowed_buy_periods via timeweb_list_tlds"
+  );
+
+export const domainPrimeSchema = z
+  .enum(["extra", "premium", "optimal", "maximal"])
+  .describe("Prime domain tier (prolongation only)");

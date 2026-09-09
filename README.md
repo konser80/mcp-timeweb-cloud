@@ -1,6 +1,6 @@
 # timeweb-cloud-mcp-server
 
-MCP server for the [Timeweb Cloud API](https://timeweb.cloud/api-docs). Manages domains, subdomains, DNS records, and name-servers.
+MCP server for the [Timeweb Cloud API](https://timeweb.cloud/api-docs). Manages domains, subdomains, DNS records, name-servers, and domain registration/prolongation/transfer.
 
 ## Tools
 
@@ -35,6 +35,23 @@ Timeweb default NS (used by `timeweb_set_default_name_servers`):
     ns3.timeweb.org
     ns4.timeweb.org
 
+Domain zones (TLDs):
+- `timeweb_list_tlds` — zones with prices and `allowed_buy_periods`; pass `names`/`search`, the full list is ~350 zones
+- `timeweb_get_tld` — one zone by ID
+
+Domain admins (registrants):
+- `timeweb_list_persons`
+- `timeweb_get_person`
+- `timeweb_create_person` — type `person` / `org` / `ip`
+- `timeweb_update_person` — contact details only (address, postcode, phone, email)
+- `timeweb_delete_person`
+
+Registration / prolongation / transfer:
+- `timeweb_create_domain_request` — action `register` / `prolong` / `transfer` (creates an **unpaid** request)
+- `timeweb_pay_domain_request` — pays it from the account balance (**spends money**)
+- `timeweb_list_domain_requests`
+- `timeweb_get_domain_request` — what was ordered and whether it is paid (carries no progress status)
+
 ## Install
 
     npm install
@@ -58,6 +75,17 @@ The token is issued in the Timeweb Cloud control panel under **API & Integration
 
 ## Notes
 
-- Domain registration / renewal / transfer endpoints (`/api/v1/domains-requests`) are intentionally **not** exposed — they are paid actions and need contact data; do them via the control panel.
-- TLD reference endpoints (`/api/v1/tlds`) are not exposed.
+- Registration is a two-step, paid flow: `timeweb_create_domain_request` only creates the request; `timeweb_pay_domain_request` is what charges the balance and sends the order to the registrar. Confirm with the user before paying.
+- `.ru` / `.рф`: period is limited to `P1Y`–`P3Y` and WHOIS privacy is unavailable. `timeweb_list_tlds` is authoritative — check `allowed_buy_periods` and `is_whois_privacy_enabled`.
+- `timeweb_create_person` and `timeweb_create_domain_request` drop fields that do not belong to the chosen `type` / `action`, and reject the call locally when a required one is missing.
+- The request object returned by `timeweb_create_domain_request` / `timeweb_get_domain_request` has no progress field — `money_source` only tells you whether it is paid. Registration progress is visible in `timeweb_list_domains`: `domain_status` `no_paid` → `paid`, `request_status` `registration_request` → `null`.
 - DNS record bodies follow the v1 schema: `{ type, value, priority?, subdomain?, ttl? }`. Subdomain in the body is a label (`sub`), not an FQDN.
+
+## Registering a domain
+
+1. `timeweb_list_tlds` — price and allowed periods for the zone
+2. `timeweb_check_domain` — is the FQDN free
+3. `timeweb_list_persons` → if none suitable, `timeweb_create_person`
+4. `timeweb_create_domain_request` with `action: "register"` → `request.id`
+5. `timeweb_pay_domain_request` with that `request_id` — this spends money
+6. `timeweb_list_domains` with `idn_name` — poll until `domain_status` is `paid` and `request_status` is `null` (usually under a minute)

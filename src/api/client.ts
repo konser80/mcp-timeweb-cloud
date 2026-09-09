@@ -18,6 +18,44 @@ export interface NameServerInput {
   ips?: string[];
 }
 
+export type DomainRequestAction = "register" | "prolong" | "transfer";
+
+export type DomainPaymentPeriod =
+  | "P1Y" | "P2Y" | "P3Y" | "P4Y" | "P5Y"
+  | "P6Y" | "P7Y" | "P8Y" | "P9Y" | "P10Y";
+
+export type DomainPrimeType = "extra" | "premium" | "optimal" | "maximal";
+
+export interface DomainRequestBody {
+  action: DomainRequestAction;
+  fqdn: string;
+  person_id?: number;
+  period?: DomainPaymentPeriod;
+  is_autoprolong_enabled?: boolean;
+  is_whois_privacy_enabled?: boolean;
+  is_antispam_enabled?: boolean;
+  prime?: DomainPrimeType;
+  auth_code?: string;
+}
+
+export interface ListPersonsParams {
+  limit?: number;
+  offset?: number;
+  is_closed?: boolean;
+}
+
+export interface ListTldsParams {
+  is_published?: boolean;
+  is_registered?: boolean;
+}
+
+export interface UpdatePersonBody {
+  address: string;
+  email: string;
+  phone: string;
+  postcode: string;
+}
+
 export interface ListDomainsParams {
   limit?: number;
   offset?: number;
@@ -170,5 +208,59 @@ export class TimewebCloudClient {
       `/api/v1/domains/${encodeURIComponent(fqdn)}/name-servers`,
       { data: { name_servers: nameServers } }
     );
+  }
+
+  // --- Domain zones (TLDs) ---
+
+  listTlds(params: ListTldsParams = {}): Promise<unknown> {
+    return this.req("get", "/api/v1/tlds", { params: { ...params } });
+  }
+
+  getTld(tldId: number): Promise<unknown> {
+    return this.req("get", `/api/v1/tlds/${tldId}`);
+  }
+
+  // --- Domain admins (persons) ---
+
+  listPersons(params: ListPersonsParams = {}): Promise<unknown> {
+    return this.req("get", "/api/v1/persons", { params: { ...params } });
+  }
+
+  getPerson(personId: number): Promise<unknown> {
+    return this.req("get", `/api/v1/persons/${personId}`);
+  }
+
+  createPerson(body: Record<string, unknown>): Promise<unknown> {
+    return this.req("post", "/api/v1/persons", { data: body });
+  }
+
+  updatePerson(personId: number, body: UpdatePersonBody): Promise<unknown> {
+    return this.req("put", `/api/v1/persons/${personId}`, { data: body });
+  }
+
+  deletePerson(personId: number): Promise<unknown> {
+    return this.req("delete", `/api/v1/persons/${personId}`);
+  }
+
+  // --- Domain requests (registration / prolongation / transfer) ---
+
+  listDomainRequests(personId?: number): Promise<unknown> {
+    return this.req("get", "/api/v1/domains-requests", {
+      params: { person_id: personId },
+    });
+  }
+
+  getDomainRequest(requestId: number): Promise<unknown> {
+    return this.req("get", `/api/v1/domains-requests/${requestId}`);
+  }
+
+  createDomainRequest(body: DomainRequestBody): Promise<unknown> {
+    return this.req("post", "/api/v1/domains-requests", { data: body });
+  }
+
+  payDomainRequest(requestId: number, personId?: number): Promise<unknown> {
+    return this.req("patch", `/api/v1/domains-requests/${requestId}`, {
+      data: { money_source: "use", person_id: personId },
+    });
   }
 }
